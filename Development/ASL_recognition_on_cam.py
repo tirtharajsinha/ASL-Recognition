@@ -1,0 +1,46 @@
+import cv2
+from hand_segmentation import segment_main
+from recog_hand_sign import recognise
+from StackFrame import stackImages
+
+# setting up webcam
+cap = cv2.VideoCapture(0)
+# webcam output frame config
+cap.set(3, 640)  # width of frames
+cap.set(4, 480)  # height of frames
+cap.set(10, 100)  # brightness of frames
+top, right, bottom, left = 10, 390, 225, 630
+
+
+def back():
+    print("reload")
+
+
+# calling and processing each frames for infinity times.
+num_frames = 0
+
+while True:
+    # rading current frame
+    success, frame = cap.read()
+    frame = cv2.flip(frame, 1)
+
+    # segmenting the hand
+    clone, seg_image, cnt = segment_main(frame, num_frames)
+
+    # recognise ASL sign
+    if cnt is not None:
+        pred = recognise(seg_image)
+    else:
+        pred = "Hand not found"
+
+    cv2.rectangle(clone, (left, top), (right, bottom), (0, 255, 0), 2)
+    cv2.rectangle(clone, (left + 1, bottom), (right - 1, bottom + 50), (0, 255, 0), -1)
+    cv2.putText(clone, pred, (410, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    num_frames += 1
+    # preparing the window frame
+    imagearray = ([clone, seg_image])
+    imagestack = stackImages(0.8, imagearray)
+
+    cv2.imshow("ASL Recognition", imagestack)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
