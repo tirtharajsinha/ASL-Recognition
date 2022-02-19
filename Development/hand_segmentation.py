@@ -47,12 +47,12 @@ def segment(image, threshold=25):
 # -----------------
 # MAIN FUNCTION
 # -----------------
-def segment_main(frame, num_frames):
+def segment_main(frame, num_frames, top, right, bottom, left,refresh):
     # initialize weight for running average
+
     aWeight = 0.5
 
     # region of interest (ROI) coordinates
-    top, right, bottom, left = 10, 350, 225, 590
 
     # clone the frame
     clone = frame.copy()
@@ -70,7 +70,7 @@ def segment_main(frame, num_frames):
     # to get the background, keep looking till a threshold is reached
     # so that our running average model gets calibrated
 
-    if num_frames < 30:
+    if num_frames < 30 or refresh:
         run_avg(gray, aWeight)
         return clone, blank, None
     # if num_frames > 31 and num_frames % 500 == 0:

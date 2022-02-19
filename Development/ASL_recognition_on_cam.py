@@ -18,15 +18,16 @@ def back():
 
 # calling and processing each frames for infinity times.
 num_frames = 0
-
+refresh = False
 while True:
     # rading current frame
     success, frame = cap.read()
     frame = cv2.flip(frame, 1)
 
     # segmenting the hand
-    clone, seg_image, cnt = segment_main(frame, num_frames)
-
+    clone, seg_image, cnt = segment_main(frame, num_frames, top, right, bottom, left, refresh)
+    if refresh:
+        refresh = False
     # recognise ASL sign
     if cnt is not None:
         pred = recognise(seg_image)
@@ -34,6 +35,7 @@ while True:
         pred = "Hand not found"
 
     cv2.rectangle(clone, (left, top), (right, bottom), (0, 255, 0), 2)
+
     cv2.rectangle(clone, (left + 1, bottom), (right - 1, bottom + 50), (0, 255, 0), -1)
     cv2.putText(clone, pred, (410, 250), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     num_frames += 1
@@ -42,5 +44,7 @@ while True:
     imagestack = stackImages(0.8, imagearray)
 
     cv2.imshow("ASL Recognition", imagestack)
+    if cv2.waitKey(1) & 0xFF == ord('r'):
+        refresh = True
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
