@@ -47,7 +47,7 @@ def segment(image, threshold=25):
 # -----------------
 # MAIN FUNCTION
 # -----------------
-def segment_main(frame, num_frames, top, right, bottom, left,refresh):
+def segment_main(frame, num_frames, top, right, bottom, left, refresh):
     # initialize weight for running average
 
     aWeight = 0.5
