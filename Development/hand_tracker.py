@@ -1,3 +1,5 @@
+import sys
+
 import cv2
 import mediapipe as mp
 import time
@@ -33,18 +35,48 @@ class handDetector:
                                                    self.mpHands.HAND_CONNECTIONS)
         return img
 
-    def findPosition(self, img, handNo=0, draw=True):
+    def findPosition(self, img, maxHandNo=2, draw=True):
+        mainlmlist = []
+        handsType = []
+        # handtype=[0,0]
+        if self.results.multi_handedness:
+            for hand in self.results.multi_handedness:
+                # print(hand)
+                # print(hand.classification)
+                # print(hand.classification[0])
+                handType = hand.classification[0].label
+                print(handType)
+                handsType.append(handType)
 
-        lmList = []
+        # print(len(self.results.multi_hand_landmarks[0]))
         if self.results.multi_hand_landmarks:
-            myHand = self.results.multi_hand_landmarks[handNo]
-            for pid, lm in enumerate(myHand.landmark):
-                # print(id, lm)
-                h, w, c = img.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                # print(id, cx, cy)
-                lmList.append([pid, cx, cy])
-                if draw:
-                    cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+            for myHand in self.results.multi_hand_landmarks:
+                lmList = []
+                if self.results.multi_hand_landmarks:
 
-        return lmList
+                    for pid, lm in enumerate(myHand.landmark):
+                        # print(id, lm)
+                        h, w, c = img.shape
+                        cx, cy = int(lm.x * w), int(lm.y * h)
+                        # print(id, cx, cy)
+                        lmList.append([pid, cx, cy])
+                        if draw:
+                            cv2.circle(img, (cx, cy), 15, (255, 0, 255), cv2.FILLED)
+                mainlmlist.append(lmList)
+
+        return mainlmlist, handsType
+
+    def getBoundedBox(self, lmList):
+        top, right, bottom, left = sys.maxsize, 0, 0, sys.maxsize
+        for pts in lmList:
+            if pts[1] < left:
+                left = pts[1]
+            if pts[1] > right:
+                right = pts[1]
+
+            if pts[2] > bottom:
+                bottom = pts[2]
+            if pts[2] < top:
+                top = pts[2]
+
+        return top, right, bottom, left
